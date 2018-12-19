@@ -61,6 +61,8 @@ def save_hashes(file_list, out_filename, relative_dir=None, hash_algo="sha512", 
                 outfile.write(file_line)
             except FileNotFoundError:
                 outfile.write(display_filename + "\t" + "ERROR - File not found\n")
+            except PermissionError:
+                outfile.write(display_filename + "\t" + "ERROR - Permission denied\n")
 
             if progressbar:
                 print("\r", end="")
