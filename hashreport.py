@@ -5,6 +5,7 @@ and any subdirectories.
 
 import os
 import hashlib
+import argparse
 
 def get_file_list(directory):
     """
@@ -57,7 +58,7 @@ def save_hashes(file_list, out_filename, relative_dir=None, hash_algo="sha512", 
             except FileNotFoundError:
                 outfile.write(display_filename + "\t" + "ERROR - File not found\n")
 
-def save_hashes_rel(directory, out_filename, start_at=0):
+def save_hashes_from_dir(directory, out_filename, relative=True, hash_algo="sha512", start_at=0):
     """
     Finds the hashes of the files in directory "dir" and saves them
     in file "out_filename" using relative paths from directory "dir."
@@ -67,4 +68,40 @@ def save_hashes_rel(directory, out_filename, start_at=0):
     @start_at: First index in the file list to start at.
     """
     file_list = get_file_list(directory)
-    save_hashes(file_list, out_filename, directory, "sha512", start_at)
+
+    relative_dir = directory
+    if not relative:
+        relative_dir = None
+
+    save_hashes(file_list, out_filename, relative_dir, hash_algo, start_at)
+
+def main():
+    """
+    Main method of the program to handle command line arguments.
+    """
+    # Parse the arguments
+    parser = argparse.ArgumentParser(prog="hashreport",
+                                     description=("Generate a report of file hashes "
+                                                  "for a specified directory."))
+    parser.add_argument("directory", help="Directory whose files will be hashed")
+    parser.add_argument("report_filename", help="Filename of the report to be generated")
+    parser.add_argument("--absolute-paths", "-a",
+                        help="Absolute paths will be used instead of relative paths",
+                        action="store_true")
+    parser.add_argument("--hashalgo", "-ha",
+                        help="Hash algorithm to use. Examples: sha256, sha512, md5",
+                        default="sha512")
+    parser.add_argument("--start-at", type=int,
+                        help=("Start at a given index in the file list of the directory. "
+                              "Change this if you need to resume a report that already "
+                              "started."),
+                        default=0)
+
+    args = parser.parse_args()
+
+    # Generate a report
+    save_hashes_from_dir(args.directory, args.report_filename, not args.absolute_paths,
+                         args.hashalgo, args.start_at)
+
+if __name__ == "__main__":
+    main()
