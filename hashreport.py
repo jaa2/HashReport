@@ -7,6 +7,9 @@ import os
 import hashlib
 import argparse
 
+# Expected width of the console
+CONSOLE_WIDTH = 45
+
 def get_file_list(directory):
     """
     Returns a list of all the files in "directory" and in any
@@ -22,7 +25,8 @@ def get_file_list(directory):
             file_list.append(str(os.path.join(dirpath, current_file)))
     return file_list
 
-def save_hashes(file_list, out_filename, relative_dir=None, hash_algo="sha512", start_at=0):
+def save_hashes(file_list, out_filename, relative_dir=None, hash_algo="sha512", start_at=0,
+                progressbar=True):
     """
     Finds the hashes of files in file_list and outputs
     the hashes in a report to out_file.
@@ -57,6 +61,14 @@ def save_hashes(file_list, out_filename, relative_dir=None, hash_algo="sha512", 
                 outfile.write(file_line)
             except FileNotFoundError:
                 outfile.write(display_filename + "\t" + "ERROR - File not found\n")
+
+            if progressbar:
+                print("\r", end="")
+                print(display_filename + (" " * (CONSOLE_WIDTH - len(display_filename))))
+                print("Found hashes of " + str(file_id + 1) + " of " + str(len(file_list))
+                      + " files.", end="", flush=True)
+    if progressbar:
+        print()
 
 def save_hashes_from_dir(directory, out_filename, relative=True, hash_algo="sha512", start_at=0):
     """
